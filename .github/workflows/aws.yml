@@ -1,0 +1,122 @@
+#include <stdio.h>
+#include <conio.h>
+
+int getValidScore(const char *subject) {
+    int value;
+    char term;
+
+    while (1) {
+        printf("Enter %s score (0-100): ", subject);
+
+        if (scanf("%d%c", &value, &term) != 2 || term != '\n') {
+            printf("Error: Enter numbers only!\n");
+            while (getchar() != '\n');
+        }
+        else if (value < 0 || value > 100) {
+            printf("Error: Score must be between 0 and 100!\n");
+        }
+        else {
+            return value;
+        }
+    }
+}
+
+void viewRecords() {
+    FILE *fp;
+    char name[50];
+    int m, e, p, c, total;
+    float avg;
+    char grade;
+
+    fp = fopen("marks_db.txt", "r");
+
+    if (fp == NULL) {
+        printf("\nNo records found!\n");
+        return;
+    }
+
+    printf("\n===== STUDENT RECORDS =====\n");
+    printf("Name   Maths Eng Phy Chem Total Avg Grade\n");
+    printf("------------------------------------------------\n");
+
+    while (fscanf(fp, "%s %d %d %d %d %d %f %c",
+                  name, &m, &e, &p, &c, &total, &avg, &grade) == 8) {
+
+        printf("%-6s %4d %3d %3d %4d %5d %5.2f %c\n",
+               name, m, e, p, c, total, avg, grade);
+    }
+
+    fclose(fp);
+}
+
+int main() {
+
+    int choice;
+    int maths, eng, phy, chem, total;
+    float average;
+    int key;
+    FILE *fp;
+    char name[50];
+
+    do {
+
+        printf("\n===== MENU =====\n");
+        printf("1. Enter Marks\n");
+        printf("2. View Records\n");
+        printf("3. Exit\n");
+        printf("Choose option: ");
+        scanf("%d", &choice);
+
+        if (choice == 1) {
+
+            printf("Enter student name (no spaces): ");
+            scanf("%s", name);
+
+            maths = getValidScore("maths");
+            eng   = getValidScore("english");
+            phy   = getValidScore("physics");
+            chem  = getValidScore("chemistry");
+
+            total = maths + eng + phy + chem;
+            average = total / 4.0;
+
+            char grade;
+
+            if (average >= 80) grade = 'A';
+            else if (average >= 70) grade = 'B';
+            else if (average >= 60) grade = 'C';
+            else if (average >= 50) grade = 'D';
+            else grade = 'F';
+
+            printf("\nTotal: %d", total);
+            printf("\nAverage: %.2f", average);
+            printf("\nGrade: %c\n", grade);
+
+            fp = fopen("marks_db.txt", "a");
+
+            if (fp != NULL) {
+                fprintf(fp, "%s %d %d %d %d %d %.2f %c\n",
+                        name, maths, eng, phy, chem, total, average, grade);
+                fclose(fp);
+            }
+
+        }
+        else if (choice == 2) {
+            viewRecords();
+        }
+        else if (choice == 3) {
+            break;
+        }
+        else {
+            printf("Invalid option!\n");
+        }
+
+        printf("\nPress any key to continue or ESC to exit...\n");
+        key = getch();
+
+    } while (key != 27 && choice != 3);
+
+    printf("\nProgram exited.\n");
+
+    return 0;
+}
